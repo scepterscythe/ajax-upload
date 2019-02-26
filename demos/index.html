@@ -1,0 +1,67 @@
+<p id="clientExcelFile" style="margin-top: 60px">
+    <button type="button" id="clientExcelBtn" class="btn btn-info pull-right">选择文件</button>
+    <span id="clientExcelName" class="form-control bg-shadow"></span>
+</p>
+<p id="clientExcelResult" style="display: none; padding-left: 20px;">
+    <span class="pull-left">导入成功：</span>
+    <span id="clientExcelResultSucc" class="pull-left text-success"></span>
+    <span class="pull-left" style="margin-left: 40px;">导入失败：</span>
+    <span id="clientExcelResultFail" class="pull-left text-danger"></span>
+</p>
+<p style="margin-top: 60px; padding-left: 20px;">
+    <span class="pull-left">模板文件：</span>
+    <span id="downClientExcel" class="pull-left text-primary">点击下载</span>
+</p>
+
+<script>
+// smallModal关闭
+$(document).on('click', '#smallModal .modal-footer #close-client_import_view', function () {
+    $("#smallModal").modal('hide');
+});
+
+// 客户导入操作
+$(function(){
+    var btnUpload = $('#clientExcelFile'), interval;
+    new AjaxUpload(btnUpload, {
+        action: "/client/client-import-do",
+        type: "POST",
+        name: 'clientExcel',
+        onSubmit: function (file, ext) {
+            if (ext && /^(xls|xlsx)$/.test(ext)){
+                $("#clientExcelBtn").text("正在上传");
+                $("#clientExcelName").html(file);
+                $("#clientExcelResult").hide();
+                $("#clientExcelResultSucc").html('');
+                $("#clientExcelResultFail").html('');
+                return true;
+            } else {
+                $.toast({
+                    position: 'top-center', icon: 'error', stack: false,
+                    heading: 'Error', text: '请选择标准格式文件',
+                });
+                return false;
+            }
+        },
+        onComplete: function (file, res) {
+            res = $.parseJSON(res);
+            if (res.code == 200) {
+                $.toast({
+                    position: 'top-center', icon: 'success', stack: false,
+                    heading: 'Success', text: '导入成功！',
+                });
+                $("#clientExcelBtn").text("导入成功");
+                $("#clientExcelResultSucc").html(res.data.succ);
+                $("#clientExcelResultFail").html(res.data.fail);
+                $("#clientExcelResult").show();
+            } else {
+                sweetAlert("客户导入失败!", "", "error");
+            }
+        }
+    });
+});
+
+// 下载客户导入模板文件
+$(document).on('click', '#downClientExcel', function () {
+    window.open("/client/down-client-excel");
+});
+</script>
